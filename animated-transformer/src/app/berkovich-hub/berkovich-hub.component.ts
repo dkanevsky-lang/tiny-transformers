@@ -79,6 +79,12 @@ export class BerkovichHubComponent {
           route: '/berkovich/operator-gradients',
           icon: 'call_split',
         },
+        {
+          title: '2D Berkovich & Tropical ReLU',
+          description: 'Explore Abhyankar 10 classes in 2D space, entangled neural network edges, and Tropical ReLU optimization.',
+          route: '/berkovich/2d',
+          icon: 'view_in_ar',
+        },
       ]
     },
     {

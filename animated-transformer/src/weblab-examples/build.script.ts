@@ -40,7 +40,7 @@ const config: esbuild.BuildOptions = {
 
 // What gets run...
 (async () => {
-  const args = await yargs.default()
+  const args = await yargs.default(process.argv.slice(2))
     .option('mode', {
       describe: 'What to do: "build", "watch" or "serve".',
       demandOption: true,

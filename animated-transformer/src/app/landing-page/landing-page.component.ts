@@ -70,7 +70,7 @@ export class LandingPageComponent {
       colorClass: 'card-advanced-docs',
     },
     {
-      title: 'Berkovich ML Explorers',
+      title: 'My Friend, Berkovich',
       description: 'Explore the continuous optimization landscapes of non-Archimedean p-adic models in Berkovich spaces.',
       route: '/berkovich',
       icon: 'blur_linear',

@@ -92,12 +92,30 @@
               "buildTarget": "tiny-transformers:build:production"
             },
             "development": {
-              "buildTarget": "tiny-transformers:build:development"
+              "buildTarget": "tiny-transformers:build:development",
+              "allowedHosts": [
+                "b2607f8b04800100000be1474ac12b8b91f40000000000000000001.proxy.googlers.com",
+                "b2607f8b04800100000be1474ac12b8b91068000000000000000001.proxy.googlers.com",
+                ".proxy.googlers.com",
+                ".c.googlers.com",
+                ".corp.google.com",
+                "localhost",
+                "127.0.0.1"
+              ]
             }
           },
           "defaultConfiguration": "development",
           "options": {
             "proxyConfig": "./proxy.conf.json",
+            "allowedHosts": [
+              "b2607f8b04800100000be1474ac12b8b91f40000000000000000001.proxy.googlers.com",
+              "b2607f8b04800100000be1474ac12b8b91068000000000000000001.proxy.googlers.com",
+              ".proxy.googlers.com",
+              ".c.googlers.com",
+              ".corp.google.com",
+              "localhost",
+              "127.0.0.1"
+            ],
             "verbose": true
           }
         },

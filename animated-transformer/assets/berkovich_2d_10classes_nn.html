@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2D Berkovich Spaces: Cartesian Mapping, 10-Class Taxonomy & 2-Layer NNs</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --app-bg: #0b0f19;
+      --app-card: #151d30;
+      --app-border: #23314d;
+      --app-accent: #38bdf8;
+    }
+    body {
+      background-color: var(--app-bg);
+      color: #f8fafc;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .panel-card {
+      background-color: var(--app-card);
+      border: 1px solid var(--app-border);
+      border-radius: 14px;
+    }
+    .class-card {
+      transition: all 0.2s ease-in-out;
+    }
+    .class-card:hover {
+      border-color: #38bdf8;
+      transform: translateY(-2px);
+    }
+    .class-card.active {
+      border-color: #38bdf8;
+      background-color: rgba(56, 189, 248, 0.1);
+    }
+    .grid-cell {
+      transition: all 0.2s ease;
+    }
+    .grid-cell:hover {
+      border-color: #38bdf8;
+      transform: scale(1.02);
+    }
+    .grid-cell.active-prod {
+      border-color: #38bdf8;
+      background-color: rgba(56, 189, 248, 0.15);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+    }
+    input[type=range] {
+      accent-color: #38bdf8;
+    }
+  </style>
+</head>
+<body class="p-6 space-y-6 antialiased">
+
+  <!-- Header Banner -->
+  <header class="panel-card p-6 shadow-2xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-2 flex-wrap">
+        <span class="bg-cyan-500/20 text-cyan-300 text-xs font-semibold px-3 py-1 rounded-full border border-cyan-500/30">
+          $\mathbb{A}^1_{\mathbb{Q}_p} \times \mathbb{A}^1_{\mathbb{Q}_p} \to \mathbb{A}^2_{\mathbb{Q}_p}$ Mapping
+        </span>
+        <span class="bg-amber-500/20 text-amber-300 text-xs font-semibold px-3 py-1 rounded-full border border-amber-500/30">
+          Theorem: $P_{\text{tube}} \ne P_{\text{prod}}$
+        </span>
+        <span class="bg-purple-500/20 text-purple-300 text-xs font-semibold px-3 py-1 rounded-full border border-purple-500/30">
+          2-Layer Neural Networks
+        </span>
+      </div>
+      <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+        2-Dimensional Berkovich Spaces & 2-Layer Neural Networks
+      </h1>
+      <p class="text-slate-400 text-xs md:text-sm mt-1 max-w-4xl">
+        Comprehensive interactive suite: 1D $\times$ 1D product mapping, Abhyankar's 10 classes, dual $p$-adic tree topologies, 2-layer neural network pushforwards, and Tropical ReLU optimization.
+      </p>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex flex-wrap bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 self-stretch lg:self-auto justify-center gap-1">
+      <button onclick="switchTab('cartesian')" id="tabBtn-cartesian" class="px-3 py-2 text-xs font-bold rounded-lg transition bg-cyan-500 text-slate-950 shadow">
+        1. 1D $\times$ 1D Product Mapping
+      </button>
+      <button onclick="switchTab('shadows')" id="tabBtn-shadows" class="px-3 py-2 text-xs font-bold text-slate-400 hover:text-white rounded-lg transition">
+        2. Shadows vs. Reality ($P_{\text{tube}} \ne P_{\text{prod}}$)
+      </button>
+      <button onclick="switchTab('classes')" id="tabBtn-classes" class="px-3 py-2 text-xs font-bold text-slate-400 hover:text-white rounded-lg transition">
+        3. 10 Classes Taxonomy
+      </button>
+      <button onclick="switchTab('parameterization')" id="tabBtn-parameterization" class="px-3 py-2 text-xs font-bold text-slate-400 hover:text-white rounded-lg transition">
+        4. Blow-ups & Polydisks
+      </button>
+      <button onclick="switchTab('relu')" id="tabBtn-relu" class="px-3 py-2 text-xs font-bold text-slate-400 hover:text-white rounded-lg transition">
+        5. Tropical ReLU & Loss
+      </button>
+      <button onclick="switchTab('nn2layer')" id="tabBtn-nn2layer" class="px-3 py-2 text-xs font-bold text-slate-400 hover:text-white rounded-lg transition">
+        6. 2-Layer Neural Networks
+      </button>
+    </div>
+  </header>
+
+  <!-- TAB 1: 1D x 1D Product Mapping -->
+  <div id="tab-cartesian" class="space-y-6">
+
+    <!-- Overview Banner -->
+    <div class="panel-card p-5 bg-gradient-to-r from-cyan-950/40 via-slate-900 to-slate-900 border-cyan-500/30">
+      <h3 class="text-base font-bold text-cyan-300 flex items-center gap-2 mb-2">
+        <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+        Interactive 2D Geometric Polyhedral Canvas Explorer
+      </h3>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Click any product card below, then <strong>click and drag elements directly on the canvas</strong> (points, lines, curves, seam edges, or 3D vertex angles) to see how geometric elements and coordinates $(c_1, c_2, \rho_1, \rho_2)$ update dynamically!
+      </p>
+    </div>
+
+    <!-- Product Matrix Table & Visual Canvas Side-by-Side -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Product Cards (Left 6 Cols) -->
+      <div class="lg:col-span-6 space-y-3">
+        <h3 class="text-xs font-bold text-white uppercase tracking-wider">Select a 1D $\times$ 1D Product Pair:</h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+
+          <!-- (I, I) -->
+          <div onclick="highlightProduct('I-I')" id="prodCard-I-I" class="grid-cell panel-card p-3.5 border-slate-700 cursor-pointer space-y-1.5">
+            <div class="flex justify-between items-center">
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-cyan-300 font-mono font-bold text-xs">(Type I, Type I)</span>
+              <span class="text-slate-400 font-mono text-[10px]">d=0, r=0, t=0</span>
+            </div>
+            <div class="text-slate-200 font-bold text-xs">Class 1: Rigid Point $(0, 0, 0)$</div>
+            <p class="text-slate-400 text-[11px]">Drag point $(c_1, c_2)$ anywhere on 2D plane!</p>
+          </div>
+
+          <!-- (I, II) -->
+          <div onclick="highlightProduct('I-II')" id="prodCard-I-II" class="grid-cell panel-card p-3.5 border-slate-700 cursor-pointer space-y-1.5">
+            <div class="flex justify-between items-center">
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-blue-300 font-mono font-bold text-xs">(Type I, Type II)</span>
+              <span class="text-slate-400 font-mono text-[10px]">d=1, r=0, t=1</span>
+            </div>
+            <div class="text-slate-200 font-bold text-xs">Class 2: Type II Curve $(0, 1, 1)$</div>
+            <p class="text-slate-400 text-[11px]">Drag node along curve or shift curve height!</p>
+          </div>
+
+          <!-- (I, III) -->
+          <div onclick="highlightProduct('I-III')" id="prodCard-I-III" class="grid-cell panel-card p-3.5 border-slate-700 cursor-pointer space-y-1.5">
+            <div class="flex justify-between items-center">
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-blue-300 font-mono font-bold text-xs">(Type I, Type III)</span>
+              <span class="text-slate-400 font-mono text-[10px]">d=1, r=1, t=0</span>
+            </div>
+            <div class="text-slate-200 font-bold text-xs">Class 3: Type III Curve $(1, 0, 1)$</div>
+            <p class="text-slate-400 text-[11px]">Slide point along 1D line or shift edge!</p>
+          </div>
+
+          <!-- (II, II) -->
+          <div onclick="highlightProduct('II-II')" id="prodCard-II-II" class="grid-cell panel-card p-3.5 border-slate-700 cursor-pointer active-prod space-y-1.5">
+            <div class="flex justify-between items-center">
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-purple-300 font-mono font-bold text-xs">(Type II, Type II)</span>
+              <span class="text-slate-400 font-mono text-[10px]">d=2, r=0, t=2</span>
+            </div>
+            <div class="text-slate-200 font-bold text-xs">Class 5: Divisorial $(0, 2, 2)$</div>
+            <p class="text-slate-400 text-[11px]">Explore $p^2$ downward & $p+1$ upward polyhedral faces!</p>
+          </div>
+
+          <!-- (II, III) -->
+          <div onclick="highlightProduct('II-III')" id="prodCard-II-III" class="grid-cell panel-card p-3.5 border-slate-700 cursor-pointer space-y-1.5">
+            <div class="flex justify-between items-center">
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-purple-300 font-mono font-bold text-xs">(Type II, Type III)</span>
+              <span class="text-slate-400 font-mono text-[10px]">d=2, r=1, t=1</span>
+            </div>
+            <div class="text-slate-200 font-bold text-xs">Class 6: Quasimonomial $(1, 1, 2)$</div>
+            <p class="text-slate-400 text-[11px]">Drag seam edge crossing the 2D faces!</p>
+          </div>
+
+          <!-- (III, III) -->
+          <div onclick="highlightProduct('III-III')" id="prodCard-III-III" class="grid-cell panel-card p-3.5 border-slate-700 cursor-pointer space-y-1.5">
+            <div class="flex justify-between items-center">
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-purple-300 font-mono font-bold text-xs">(Type III, Type III)</span>
+              <span class="text-slate-400 font-mono text-[10px]">d=2, r=2, t=0</span>
+            </div>
+            <div class="text-slate-200 font-bold text-xs">Class 7: Irrational $(2, 0, 2)$</div>
+            <p class="text-slate-400 text-[11px]">Drag point inside solid 2D polyhedral face!</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Live Interactive Canvas & Controls (Right 6 Cols) -->
+      <div class="lg:col-span-6 panel-card p-5 flex flex-col space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
+          <div>
+            <h2 class="text-base font-bold text-purple-300" id="prodTitle">Class 5: Divisorial Valuation (0, 2, 2)</h2>
+            <p class="text-xs font-mono text-slate-400" id="prodInvariants">Product: (Type II, Type II) | (r=0, t=2, d=2)</p>
+          </div>
+          <span class="bg-purple-500/20 text-purple-300 text-xs px-2.5 py-1 rounded font-mono border border-purple-500/30" id="prodBadge">Free 2D Realm</span>
+        </div>
+
+        <!-- Dynamic Canvas -->
+        <div class="relative bg-slate-950 rounded-xl border border-slate-800 p-2 flex justify-center items-center h-[300px] overflow-hidden cursor-pointer">
+          <canvas id="prodCanvas" width="420" height="280"></canvas>
+          
+          <!-- Live Coordinate Overlay Badge -->
+          <div class="absolute bottom-3 left-3 bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono text-purple-300 shadow" id="coordOverlay">
+            p=3 | 13 Faces (9 Down, 4 Up)
+          </div>
+        </div>
+
+        <!-- Interactive Sliders / Prime Selector -->
+        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 space-y-2 text-xs" id="prodControlBox">
+          <div class="flex justify-between items-center">
+            <span id="sliderLabel1" class="text-slate-300 font-medium">Select Base Prime $p$:</span>
+            <div class="flex gap-2">
+              <button onclick="setPrimeForII(2)" id="primeBtn-2" class="px-2.5 py-1 rounded text-xs font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:bg-purple-900/40 transition">p = 2 (7 faces)</button>
+              <button onclick="setPrimeForII(3)" id="primeBtn-3" class="px-2.5 py-1 rounded text-xs font-mono font-bold bg-purple-600 text-white shadow hover:bg-purple-500 transition">p = 3 (13 faces)</button>
+              <button onclick="setPrimeForII(5)" id="primeBtn-5" class="px-2.5 py-1 rounded text-xs font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:bg-purple-900/40 transition">p = 5 (31 faces)</button>
+            </div>
+          </div>
+          <div class="flex justify-between text-slate-300 pt-1">
+            <span>3D Viewing Angle:</span>
+            <span class="font-mono text-purple-300" id="sliderVal1">0.30</span>
+          </div>
+          <input type="range" id="prodSlider1" min="-2" max="2" step="0.05" value="0.3" oninput="onProdSliderChange()" class="w-full">
+        </div>
+
+        <!-- Dynamic Description Box -->
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
+          <div class="text-slate-200 font-semibold flex items-center gap-2">
+            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Selected 2D Geometry & Dragging Guide:
+          </div>
+          <p class="text-slate-300 text-[11px] leading-relaxed" id="prodDesc">
+            Click p=2, p=3, or p=5 to switch prime base. Drag slider to rotate 3D view of intersecting faces!
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DEDICATED (II, II) MATHEMATICAL EXPLANATION SECTION -->
+    <div id="iiExplanationBox" class="panel-card p-6 space-y-5 bg-gradient-to-r from-purple-950/30 via-slate-900 to-slate-900 border-purple-500/40">
+      <div class="border-b border-purple-500/30 pb-3">
+        <h3 class="text-base font-extrabold text-purple-300 flex items-center gap-2">
+          <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+          Detailed Structure of Upward and Downward Movements at a (II, II) Divisorial Vertex
+        </h3>
+        <p class="text-xs text-slate-300 mt-1">
+          2-Dimensional generalization of parent ($\infty$) and child ($\gamma \in \mathbb{F}_p$) branching directions over $\mathbb{Q}_p$.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-300">
+
+        <!-- Left Column: Recapping 1D vs 2D -->
+        <div class="space-y-3">
+          <div class="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2">
+            <strong class="text-sky-300 font-bold text-sm block">1. 1D Berkovich Space ($\mathbb{A}^1_{\mathbb{Q}_p}$) at Type II Vertex:</strong>
+            <ul class="list-disc list-inside space-y-1 text-slate-300 text-[11px]">
+              <li><strong>Total Directions</strong>: $|\mathbb{P}^1(\mathbb{F}_p)| = p + 1$ directions.</li>
+              <li><strong class="text-emerald-300">1 Upward Edge ($\gamma = \infty$)</strong>: Moves up to larger radius $\rho + 1$ (parent disk).</li>
+              <li><strong class="text-purple-300">$p$ Downward Edges ($\gamma \in \mathbb{F}_p$)</strong>: Move down to smaller radius $\rho - 1$ into $p$ child disks.</li>
+            </ul>
+          </div>
+
+          <div class="p-4 bg-purple-950/40 rounded-xl border border-purple-800/60 space-y-2">
+            <strong class="text-purple-300 font-bold text-sm block">2. 2D Berkovich Space ($\mathbb{A}^2_{\mathbb{Q}_p}$) at (II, II) Vertex:</strong>
+            <p class="text-[11px] leading-relaxed text-slate-300">
+              The tangent space of directions is $\mathbb{P}^2(\mathbb{F}_p)$, containing <strong>$p^2 + p + 1$ total faces</strong>. $\mathbb{P}^2(\mathbb{F}_p)$ partitions into:
+            </p>
+            <div class="p-2 bg-slate-900 rounded font-mono text-[11px] text-purple-200 border border-purple-500/30 text-center">
+              $$\mathbb{P}^2(\mathbb{F}_p) = \underbrace{\mathbb{F}_p \times \mathbb{F}_p}_{p^2 \text{ Downward Faces}} \;\cup\; \underbrace{\mathbb{P}^1(\mathbb{F}_p)}_{p+1 \text{ Upward/Boundary Faces}}$$
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Geometric Meaning & Comparison Table -->
+        <div class="space-y-3">
+          <div class="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2">
+            <strong class="text-amber-300 font-bold text-sm block">3. Upward vs Downward Face Breakdown:</strong>
+            <div class="space-y-1.5 text-[11px]">
+              <div>
+                <strong class="text-purple-300">$p^2$ Downward Faces ($\mathbb{F}_p \times \mathbb{F}_p$)</strong>: Refining precision in <em>both</em> variables $X$ and $Y$ simultaneously, moving down to smaller log-radii $(\rho_1 - 1, \rho_2 - 1)$ into one of $p \times p = p^2$ child poly-disks (sub-boxes).
+              </div>
+              <div>
+                <strong class="text-emerald-300">$p + 1$ Upward / Boundary Faces ($\mathbb{P}^1(\mathbb{F}_p)$)</strong>:
+                <ul class="list-disc list-inside ml-2 text-slate-300">
+                  <li><strong>1 Purely Upward Face $(\infty, \infty)$</strong>: Moving up to larger log-radii $(\rho_1 + 1, \rho_2 + 1)$ toward master parent poly-disk.</li>
+                  <li><strong>$p$ Mixed Boundary Faces</strong>: Expanding radius in one variable while refining a child branch in the other.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Comparison Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs bg-slate-950 rounded-xl border border-slate-800">
+          <thead>
+            <tr class="border-b border-slate-800 text-slate-400 font-mono bg-slate-900/60">
+              <th class="p-3">Dimension & Space</th>
+              <th class="p-3">Vertex Type</th>
+              <th class="p-3">Total Faces/Edges</th>
+              <th class="p-3 text-emerald-400">"Upward" (Parent) Faces</th>
+              <th class="p-3 text-purple-400">"Downward" (Child) Faces</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 text-slate-300 font-mono">
+            <tr>
+              <td class="p-3">1D Berkovich ($\mathbb{A}^1_{\mathbb{Q}_p}$)</td>
+              <td class="p-3 font-bold text-sky-300">Type II</td>
+              <td class="p-3">$p + 1$</td>
+              <td class="p-3 text-emerald-300">1 ($\infty$)</td>
+              <td class="p-3 text-purple-300">$p$ ($\gamma \in \mathbb{F}_p$)</td>
+            </tr>
+            <tr class="bg-purple-950/20">
+              <td class="p-3">2D Berkovich ($\mathbb{A}^2_{\mathbb{Q}_p}$)</td>
+              <td class="p-3 font-bold text-purple-300">(II, II) Divisorial</td>
+              <td class="p-3 font-bold text-purple-200">$p^2 + p + 1$</td>
+              <td class="p-3 text-emerald-300 font-bold">$p + 1$ ($\mathbb{P}^1(\mathbb{F}_p)$)</td>
+              <td class="p-3 text-purple-300 font-bold">$p^2$ ($\mathbb{F}_p \times \mathbb{F}_p$)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 text-[11px] text-slate-400">
+        <strong class="text-cyan-300">Example for $p = 3$:</strong> Total faces $= 3^2 + 3 + 1 = \mathbf{13 \text{ faces}}$. There are $3^2 = \mathbf{9 \text{ downward faces}}$ (refining child sub-boxes) and $3 + 1 = \mathbf{4 \text{ upward faces}}$ (expanding up to parent boxes).
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 0: Shadows vs Reality (P_prod vs P_tube) -->
+  <div id="tab-shadows" class="space-y-6 hidden">
+    <div class="panel-card p-5 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-900 border-amber-500/30">
+      <h3 class="text-base font-bold text-amber-300 flex items-center gap-2 mb-2">
+        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        The Intuitive Analogy: Shadows on the Wall vs. 3D Reality
+      </h3>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Imagine a 3D object and its 2D shadows on the X and Y walls. If the object is a <strong>Cube</strong> ($P_{\text{prod}}$), its shadows on both walls are squares, and combining them recreates the cube. But if the object is a <strong>Diagonal Pipe</strong> ($P_{\text{tube}}$), its 1D projections look identical to the cube's shadows, yet the variables $X$ and $Y$ are deeply <em>entangled</em>! In Berkovich spaces, a 2D point is not always just two 1D points pasted together.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-7 panel-card p-5 flex flex-col space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
+          <div>
+            <h2 class="text-base font-bold text-amber-400">2D Geometry: Cartesian Polydisc vs. Entangled Tube</h2>
+            <p class="text-xs text-slate-400">Comparing $P_{\text{prod}} = (P_1, P_2)$ and $P_{\text{tube}} = \{|x| \le 1, |y - x| \le r\}$</p>
+          </div>
+          <span class="text-xs font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded" id="tubeRadiusLabel">r = 0.35</span>
+        </div>
+
+        <div class="relative bg-slate-950 rounded-xl border border-slate-800 p-2 flex justify-center items-center h-[340px] overflow-hidden">
+          <canvas id="shadowsCanvas" width="460" height="320"></canvas>
+        </div>
+
+        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
+          <div class="flex justify-between text-slate-300">
+            <span>Entangled Tube Neighborhood Radius ($r$):</span>
+            <span class="font-mono text-amber-300" id="valR">0.35</span>
+          </div>
+          <input type="range" id="sliderR" min="0.05" max="0.95" step="0.05" value="0.35" oninput="updateShadows()" class="w-full">
+        </div>
+      </div>
+
+      <div class="lg:col-span-5 panel-card p-5 flex flex-col space-y-4">
+        <div class="border-b border-slate-700/60 pb-3">
+          <h2 class="text-base font-bold text-sky-400">The Mathematical Proof: $P_{\text{tube}} \ne P_{\text{prod}}$</h2>
+          <p class="text-xs text-slate-400">Testing both points on the polynomial $f(X, Y) = Y - X$</p>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div class="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
+            <strong class="text-sky-300 text-sm">1. Simple Pair $P_{\text{prod}} = (P_1, P_2)$</strong>
+            <p class="text-slate-400 text-[11px]">$X$ and $Y$ are independent ($|x| \le 1, |y| \le 1$).</p>
+            <div class="pt-1 flex justify-between items-center font-mono bg-slate-900 p-2 rounded">
+              <span class="text-slate-300">$|Y - X|_{\text{prod}}$:</span>
+              <span class="text-sky-400 font-bold text-sm">1.00</span>
+            </div>
+          </div>
+
+          <div class="p-4 bg-slate-950/80 rounded-xl border border-amber-500/40 space-y-1.5">
+            <strong class="text-amber-300 text-sm">2. Entangled Tube $P_{\text{tube}}$</strong>
+            <p class="text-slate-400 text-[11px]">$Y$ is forced close to $X$ ($|y - x| \le r$).</p>
+            <div class="pt-1 flex justify-between items-center font-mono bg-slate-900 p-2 rounded">
+              <span class="text-slate-300">$|Y - X|_{\text{tube}}$:</span>
+              <span class="text-amber-300 font-bold text-sm" id="proofTubeVal">0.35</span>
+            </div>
+          </div>
+
+          <div class="p-4 bg-emerald-950/30 rounded-xl border border-emerald-500/40 text-[11px]">
+            <strong class="text-emerald-300 block mb-1">Contradiction Proved!</strong>
+            <p class="text-slate-300" id="proofSummary">Since $r = 0.35 \ne 1.00$, $P_{\text{tube}} \ne P_{\text{prod}}$.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: The 10 Combinatorial Classes of Points in 2D Berkovich Space -->
+  <div id="tab-classes" class="space-y-6 hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-5 space-y-2 max-h-[580px] overflow-y-auto pr-1">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select a Berkovich Point Class:</h3>
+        <div onclick="selectClass(0)" id="classCard-0" class="class-card panel-card p-3 cursor-pointer active flex justify-between items-center">
+          <div><div class="text-xs font-bold text-slate-200">1. Rigid Point</div><div class="text-[11px] font-mono text-slate-400">(r=0, t=0, d=0)</div></div>
+          <span class="px-2 py-0.5 text-[10px] rounded bg-slate-800 text-slate-300 font-mono">0D Point</span>
+        </div>
+        <div onclick="selectClass(1)" id="classCard-1" class="class-card panel-card p-3 cursor-pointer flex justify-between items-center">
+          <div><div class="text-xs font-bold text-blue-300">2. Type II Curve-Supported</div><div class="text-[11px] font-mono text-slate-400">(r=0, t=1, d=1)</div></div>
+          <span class="px-2 py-0.5 text-[10px] rounded bg-blue-900/60 text-blue-300 font-mono">0D Vertex</span>
+        </div>
+        <div onclick="selectClass(2)" id="classCard-2" class="class-card panel-card p-3 cursor-pointer flex justify-between items-center">
+          <div><div class="text-xs font-bold text-blue-300">3. Type III Curve-Supported</div><div class="text-[11px] font-mono text-slate-400">(r=1, t=0, d=1)</div></div>
+          <span class="px-2 py-0.5 text-[10px] rounded bg-blue-900/60 text-blue-300 font-mono">1D Edge</span>
+        </div>
+        <div onclick="selectClass(3)" id="classCard-3" class="class-card panel-card p-3 cursor-pointer flex justify-between items-center">
+          <div><div class="text-xs font-bold text-blue-300">4. Curve Defect Limit</div><div class="text-[11px] font-mono text-slate-400">(r=0, t=0, d=1)</div></div>
+          <span class="px-2 py-0.5 text-[10px] rounded bg-red-900/50 text-red-300 font-mono">Void Limit</span>
+        </div>
+        <div onclick="selectClass(4)" id="classCard-4" class="class-card panel-card p-3 cursor-pointer flex justify-between items-center">
+          <div><div class="text-xs font-bold text-purple-300">5. Divisorial Valuation</div><div class="text-[11px] font-mono text-slate-400">(r=0, t=2, d=2)</div></div>
+          <span class="px-2 py-0.5 text-[10px] rounded bg-purple-900/60 text-purple-300 font-mono">0D Max Vertex</span>
+        </div>
+        <div onclick="selectClass(5)" id="classCard-5" class="class-card panel-card p-3 cursor-pointer flex justify-between items-center">
+          <div><div class="text-xs font-bold text-purple-300">6. Quasimonomial Valuation</div><div class="text-[11px] font-mono text-slate-400">(r=1, t=1, d=2)</div></div>
+          <span class="px-2 py-0.5 text-[10px] rounded bg-purple-900/60 text-purple-300 font-mono">1D Seam Edge</span>
+        </div>
+        <div onclick="selectClass(6)" id="classCard-6" class="class-card panel-card p-3 cursor-pointer flex justify-between items-center">
+          <div><div class="text-xs font-bold text-purple-300">7. Irrational Valuation</div><div class="text-[11px] font-mono text-slate-400">(r=2, t=0, d=2)</div></div>
+          <span class="px-2 py-0.5 text-[10px] rounded bg-purple-900/60 text-purple-300 font-mono">2D Solid Face</span>
+        </div>
+        <div onclick="selectClass(7)" id="classCard-7" class="class-card panel-card p-3 cursor-pointer flex justify-between items-center">
+          <div><div class="text-xs font-bold text-purple-300">8. Transcendental Limit</div><div class="text-[11px] font-mono text-slate-400">(r=0, t=1, d=2)</div></div>
+          <span class="px-2 py-0.5 text-[10px] rounded bg-amber-900/50 text-amber-300 font-mono">Face Void</span>
+        </div>
+        <div onclick="selectClass(8)" id="classCard-8" class="class-card panel-card p-3 cursor-pointer flex justify-between items-center">
+          <div><div class="text-xs font-bold text-purple-300">9. Infinitely Singular Valuation</div><div class="text-[11px] font-mono text-slate-400">(r=1, t=0, d=2)</div></div>
+          <span class="px-2 py-0.5 text-[10px] rounded bg-amber-900/50 text-amber-300 font-mono">Edge Void</span>
+        </div>
+        <div onclick="selectClass(9)" id="classCard-9" class="class-card panel-card p-3 cursor-pointer flex justify-between items-center">
+          <div><div class="text-xs font-bold text-purple-300">10. Total Defect Limit</div><div class="text-[11px] font-mono text-slate-400">(r=0, t=0, d=2)</div></div>
+          <span class="px-2 py-0.5 text-[10px] rounded bg-red-900/60 text-red-300 font-mono">Total Void</span>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 panel-card p-6 flex flex-col space-y-4">
+        <div class="flex justify-between items-start border-b border-slate-700/60 pb-3">
+          <div>
+            <h2 class="text-lg font-bold text-sky-400" id="classTitle">1. Rigid Point (0, 0, 0)</h2>
+            <p class="text-xs text-slate-400" id="classSub">Support dim d(x)=0, Rational rank r_x=0, Transcendence deg t_x=0</p>
+          </div>
+          <span class="bg-slate-800 text-sky-300 border border-slate-700 text-xs px-2.5 py-1 rounded font-mono" id="classBadge">Classic Realm</span>
+        </div>
+
+        <div class="relative bg-slate-950 rounded-xl border border-slate-800 p-3 flex justify-center items-center h-[340px] overflow-hidden">
+          <canvas id="classCanvas" width="460" height="320"></canvas>
+        </div>
+
+        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-xs space-y-2">
+          <div class="text-slate-200 font-semibold">Geometrical Significance:</div>
+          <p class="text-slate-300 leading-relaxed" id="classDesc">Single classical coordinate point in K^2.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Blow-ups & Parameterization -->
+  <div id="tab-parameterization" class="space-y-6 hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="panel-card p-5 space-y-4">
+        <h2 class="text-base font-bold text-purple-300">Parameterizing Divisorial Class $(0,2,2)$ via Blow-ups</h2>
+        <div class="bg-slate-950 rounded-xl border border-slate-800 p-3 flex justify-center items-center h-[260px]">
+          <canvas id="blowupCanvas" width="400" height="240"></canvas>
+        </div>
+      </div>
+
+      <div class="panel-card p-5 space-y-4">
+        <h2 class="text-base font-bold text-red-400">Parameterizing Defect Limits $(0,0,2)$ via Nested Polydisks</h2>
+        <div class="bg-slate-950 rounded-xl border border-slate-800 p-3 flex justify-center items-center h-[260px]">
+          <canvas id="polydiskCanvas" width="400" height="240"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: Tropical ReLU & Loss -->
+  <div id="tab-relu" class="space-y-6 hidden">
+    <div class="panel-card p-6 space-y-6">
+      <div class="border-b border-slate-700/60 pb-3 flex justify-between items-center">
+        <div>
+          <h2 class="text-lg font-bold text-emerald-400">The Tropical ReLU & V-Shaped Loss Valley</h2>
+          <p class="text-xs text-slate-400">Loss $r_{\text{new}}(m) = \max(r_{\text{min}}, r_1 |m - m^*|_K)$.</p>
+        </div>
+        <span class="text-xs font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full" id="reluLossLabel">Loss r_new: 0.12</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-7 bg-slate-950 rounded-xl border border-slate-800 p-4 flex justify-center items-center h-[360px]">
+          <canvas id="reluCanvas" width="460" height="340"></canvas>
+        </div>
+
+        <div class="lg:col-span-5 space-y-4 text-xs bg-slate-900/60 p-5 rounded-xl border border-slate-800">
+          <h3 class="font-bold text-sm text-emerald-400 border-b border-slate-800 pb-2">Optimization Controls</h3>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1"><span>Model Weight ($m$):</span><span class="font-mono text-emerald-300" id="valM">1.80</span></div>
+            <input type="range" id="sliderM" min="-3" max="3" step="0.05" value="1.8" oninput="updateReLU()" class="w-full">
+          </div>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1"><span>Ground Truth ($m^*$):</span><span class="font-mono text-purple-300" id="valMStar">0.00</span></div>
+            <input type="range" id="sliderMStar" min="-2" max="2" step="0.1" value="0.0" oninput="updateReLU()" class="w-full">
+          </div>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1"><span>Noise Floor ($r_{\text{min}}$):</span><span class="font-mono text-sky-300" id="valRMin">0.20</span></div>
+            <input type="range" id="sliderRMin" min="0.05" max="0.8" step="0.05" value="0.2" oninput="updateReLU()" class="w-full">
+          </div>
+          <div class="pt-2 flex gap-2">
+            <button onclick="stepReLUGD()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow text-xs">Step Geodesic GD</button>
+            <button onclick="resetReLU()" class="px-3 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: 2-LAYER NEURAL NETWORKS & DUAL TREES (RESTORED ORIGINAL VISUALIZER) -->
+  <div id="tab-nn2layer" class="space-y-6 hidden">
+    <!-- Presets Bar -->
+    <div class="panel-card p-4 flex flex-wrap justify-between items-center gap-3 bg-gradient-to-r from-purple-950/40 via-slate-900 to-slate-900 border-purple-500/30">
+      <div>
+        <h3 class="text-sm font-bold text-purple-300">2-Layer Berkovich Neural Network Architecture & Dual Trees</h3>
+        <p class="text-xs text-slate-400">Interactive 2D poly-disk space, parallel $p$-adic trees, tropical pushforward, and Hsia distance softmax.</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="applyNnPreset('xor')" class="px-3 py-1.5 bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 rounded-lg text-xs font-medium transition">
+          Preset: XOR Affinoid DNF
+        </button>
+        <button onclick="applyNnPreset('and')" class="px-3 py-1.5 bg-blue-600/30 hover:bg-blue-600/50 text-blue-200 border border-blue-500/40 rounded-lg text-xs font-medium transition">
+          Preset: AND Poly-Disk
+        </button>
+        <button onclick="applyNnPreset('multi_tree')" class="px-3 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 border border-emerald-500/40 rounded-lg text-xs font-medium transition">
+          Preset: Multi-Tree 2-Layer
+        </button>
+      </div>
+    </div>
+
+    <!-- Main 3-Column Visualizer Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Column 1: 2D Berkovich Space View -->
+      <div class="panel-card p-5 flex flex-col space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
+          <div>
+            <h2 class="text-base font-bold text-sky-400">1. 2D Berkovich Space $\mathbb{A}_p^2$</h2>
+            <p class="text-xs text-slate-400">Affinoid Poly-Disk $\bar{D}(c_1, p^{\rho_1}) \times \bar{D}(c_2, p^{\rho_2})$</p>
+          </div>
+          <span class="text-xs font-mono bg-slate-800 text-sky-300 px-2 py-1 rounded border border-slate-700" id="nnPrimeLabel">p = 3</span>
+        </div>
+
+        <div class="relative bg-slate-950 rounded-xl border border-slate-800 p-2 flex justify-center items-center overflow-hidden h-[320px]">
+          <canvas id="canvas2D" width="340" height="300"></canvas>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+          <div>
+            <span class="text-sky-400 font-semibold">Dim 1 ($x_1$):</span>
+            <div class="font-mono text-slate-300" id="nnX1Info">c1=0.1, &rho;1=0.0</div>
+          </div>
+          <div>
+            <span class="text-pink-400 font-semibold">Dim 2 ($x_2$):</span>
+            <div class="font-mono text-slate-300" id="nnX2Info">c2=0.2, &rho;2=0.0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 2: Dual p-adic Trees -->
+      <div class="panel-card p-5 flex flex-col space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
+          <div>
+            <h2 class="text-base font-bold text-pink-400">2. Dual $p$-adic Tree Topologies ($\Gamma_p$)</h2>
+            <p class="text-xs text-slate-400">Parallel tree paths & Type I, II, III vertices</p>
+          </div>
+        </div>
+
+        <div class="relative bg-slate-950 rounded-xl border border-slate-800 p-2 flex justify-center items-center overflow-hidden h-[320px]">
+          <canvas id="canvasTrees" width="340" height="300"></canvas>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+          <div>
+            <span class="text-purple-300 font-semibold">Tree Type Marker:</span>
+            <div class="text-slate-300 font-mono" id="nnTreeType1">Type III (Edge)</div>
+          </div>
+          <div>
+            <span class="text-purple-300 font-semibold">Log-Radius ($\rho$):</span>
+            <div class="text-slate-300 font-mono" id="nnTreeRhoVal">&rho;1=0.0, &rho;2=0.0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 3: 2-Layer NN Pushforward & Softmax -->
+      <div class="panel-card p-5 flex flex-col space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-700/60 pb-3">
+          <div>
+            <h2 class="text-base font-bold text-purple-400">3. 2-Layer NN Pushforward & Softmax</h2>
+            <p class="text-xs text-slate-400">Tropical scale pushforward & Affinoid Softmax loss</p>
+          </div>
+          <span class="text-xs font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded" id="nnLossBadge">Loss: 0.142</span>
+        </div>
+
+        <div class="relative bg-slate-950 rounded-xl border border-slate-800 p-2 flex justify-center items-center overflow-hidden h-[320px]">
+          <canvas id="canvasNN" width="340" height="300"></canvas>
+        </div>
+
+        <div class="space-y-1 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+          <div class="flex justify-between text-slate-300">
+            <span>Layer 1 Pushforward ($\rho_h$):</span>
+            <span class="font-mono text-purple-300" id="nnL1Pushforward">&rho;h1=0.2, &rho;h2=-0.5</span>
+          </div>
+          <div class="flex justify-between text-slate-300">
+            <span>Layer 2 Hsia Distance ($\delta$):</span>
+            <span class="font-mono text-amber-300" id="nnHsiaDist">&delta;(h, y) = 0.333</span>
+          </div>
+          <div class="flex justify-between text-slate-300">
+            <span>Class Probabilities $P(C_k)$:</span>
+            <span class="font-mono text-emerald-400 font-semibold" id="nnProbDist">P0: 0.88, P1: 0.12</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Parameter Controls Grid -->
+    <div class="panel-card p-6 space-y-5">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-700/60 pb-3">
+        <div>
+          <h3 class="text-sm font-bold text-white">Model Parameters & Geodesic Gradient Descent</h3>
+          <p class="text-xs text-slate-400">Adjust centers, radii, weights, and run continuous non-Archimedean backpropagation</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="stepNnGD()" class="px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold rounded-lg shadow text-xs transition">
+            Step Berkovich GD
+          </button>
+          <button onclick="toggleNnAutoTrain()" id="nnAutoBtn" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold rounded-lg shadow text-xs transition">
+            Auto Train
+          </button>
+          <button onclick="resetNnParams()" class="px-3 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs transition">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 text-xs">
+        <div class="space-y-2 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800">
+          <div class="font-bold text-sky-400 border-b border-slate-800 pb-1">Input $x_1$ Center & Log-Radius</div>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1"><span>Center $c_1$:</span><span class="font-mono text-sky-300" id="valC1">0.10</span></div>
+            <input type="range" id="sliderC1" min="-2" max="2" step="0.05" value="0.1" oninput="updateNnState()" class="w-full">
+          </div>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1"><span>Log-Radius $\rho_1$:</span><span class="font-mono text-sky-300" id="valRho1">0.00</span></div>
+            <input type="range" id="sliderRho1" min="-2" max="2" step="0.1" value="0.0" oninput="updateNnState()" class="w-full">
+          </div>
+        </div>
+
+        <div class="space-y-2 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800">
+          <div class="font-bold text-pink-400 border-b border-slate-800 pb-1">Input $x_2$ Center & Log-Radius</div>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1"><span>Center $c_2$:</span><span class="font-mono text-pink-300" id="valC2">0.20</span></div>
+            <input type="range" id="sliderC2" min="-2" max="2" step="0.05" value="0.2" oninput="updateNnState()" class="w-full">
+          </div>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1"><span>Log-Radius $\rho_2$:</span><span class="font-mono text-pink-300" id="valRho2">0.00</span></div>
+            <input type="range" id="sliderRho2" min="-2" max="2" step="0.1" value="0.0" oninput="updateNnState()" class="w-full">
+          </div>
+        </div>
+
+        <div class="space-y-2 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800">
+          <div class="font-bold text-purple-400 border-b border-slate-800 pb-1">Layer 1 Neuron Weights</div>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1"><span>Weight $W_1$:</span><span class="font-mono text-purple-300" id="valW1">1.00</span></div>
+            <input type="range" id="sliderW1" min="-3" max="3" step="0.2" value="1.0" oninput="updateNnState()" class="w-full">
+          </div>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1"><span>Weight $W_2$:</span><span class="font-mono text-purple-300" id="valW2">1.00</span></div>
+            <input type="range" id="sliderW2" min="-3" max="3" step="0.2" value="1.0" oninput="updateNnState()" class="w-full">
+          </div>
+        </div>
+
+        <div class="space-y-2 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800">
+          <div class="font-bold text-emerald-400 border-b border-slate-800 pb-1">Prime Base & Learning Rate</div>
+          <div>
+            <label class="block text-slate-300 mb-1">Base Prime $p$:</label>
+            <select id="selectPrime" onchange="updateNnState()" class="w-full bg-slate-950 border border-slate-700 text-xs rounded p-1.5 text-white font-mono">
+              <option value="2">p = 2 (Binary field)</option>
+              <option value="3" selected>p = 3 (Ternary field)</option>
+              <option value="5">p = 5 (Quinary field)</option>
+            </select>
+          </div>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1"><span>Learning Rate $\eta$:</span><span class="font-mono text-emerald-300" id="valLR">0.15</span></div>
+            <input type="range" id="sliderLR" min="0.01" max="0.5" step="0.01" value="0.15" oninput="updateNnState()" class="w-full">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State for Product Mapping Canvas Dragging & Slider Controls
+    let prodState = {
+      key: 'II-II',
+      isDragging: false,
+      primeP: 3,
+      c1: 0.20, c2: -0.30,
+      nodeT: 0.40, curveShiftY: 0.00,
+      linePosT: 0.50, lineAngle: 0.00,
+      rotAngle: 0.30, activeBranch: 'center',
+      seamX: 0.00,
+      faceU: 0.10, faceV: 0.20
+    };
+
+    // State for Restored 2-Layer Neural Network Tab 6
+    let nnState = {
+      p: 3, c1: 0.1, rho1: 0.0, c2: 0.2, rho2: 0.0,
+      w1: 1.0, w2: 1.0, lr: 0.15, autoTrain: false, timer: null
+    };
+
+    const productDB = {
+      'I-I': { title: "Class 1: Rigid Point (0, 0, 0)", invariants: "Product: (Type I, Type I) | (r=0, t=0, d=0)", badge: "Classic Realm", sliderLabel: "X-Axis Offset (c1):", desc: "CLICK & DRAG point anywhere on 2D plane!" },
+      'I-II': { title: "Class 2: Type II Curve-Supported (0, 1, 1)", invariants: "Product: (Type I, Type II) | (r=0, t=1, d=1)", badge: "Curve-Supported", sliderLabel: "Curve Vertical Shift:", desc: "CLICK & DRAG node along curve or shift curve height!" },
+      'I-III': { title: "Class 3: Type III Curve-Supported (1, 0, 1)", invariants: "Product: (Type I, Type III) | (r=1, t=0, d=1)", badge: "Curve-Supported", sliderLabel: "1D Line Angle:", desc: "CLICK & DRAG point along smooth 1D line!" },
+      'II-II': { title: "Class 5: Divisorial Valuation (0, 2, 2)", invariants: "Product: (Type II, Type II) | (r=0, t=2, d=2)", badge: "Free 2D Realm", sliderLabel: "3D Viewing Angle:", desc: "Click p=2, p=3, or p=5 buttons to re-render p^2 downward child poly-disks and p+1 upward parent faces!" },
+      'II-III': { title: "Class 6: Quasimonomial Valuation (1, 1, 2)", invariants: "Product: (Type II, Type III) | (r=1, t=1, d=2)", badge: "Free 2D Realm", sliderLabel: "Seam Line Position:", desc: "CLICK & DRAG red 1D seam edge across 2D faces!" },
+      'III-III': { title: "Class 7: Irrational Valuation (2, 0, 2)", invariants: "Product: (Type III, Type III) | (r=2, t=0, d=2)", badge: "Free 2D Realm", sliderLabel: "Face Size:", desc: "CLICK & DRAG point inside solid 2D face!" }
+    };
+
+    const classesDB = [
+      { name: "1. Rigid Point", invariants: "d(x)=0, r_x=0, t_x=0", badge: "Classic Realm", desc: "Single classical coordinate point in K^2." },
+      { name: "2. Type II Curve-Supported", invariants: "d(x)=1, r_x=0, t_x=1", badge: "Curve-Supported", desc: "0D branching vertex on a 1D algebraic curve." },
+      { name: "3. Type III Curve-Supported", invariants: "d(x)=1, r_x=1, t_x=0", badge: "Curve-Supported", desc: "1D continuous edge without branching on a curve." },
+      { name: "4. Curve Defect Limit", invariants: "d(x)=1, r_x=0, t_x=0", badge: "Curve Defect", desc: "Shrinking disks on a curve converging into a void." },
+      { name: "5. Divisorial Valuation", invariants: "d(x)=2, r_x=0, t_x=2", badge: "Free 2D Realm", desc: "0D Vertices in free 2D space where 2D faces intersect." },
+      { name: "6. Quasimonomial Valuation", invariants: "d(x)=2, r_x=1, t_x=1", badge: "Free 2D Realm", desc: "1D line seams between adjacent 2D polyhedral faces." },
+      { name: "7. Irrational Valuation", invariants: "d(x)=2, r_x=2, t_x=0", badge: "Free 2D Realm", desc: "Solid 2D polyhedral faces (polygons)." },
+      { name: "8. Transcendental Limit", invariants: "d(x)=2, r_x=0, t_x=1", badge: "Free 2D Realm", desc: "Dead-end paths falling off 2D faces into a Face Void." },
+      { name: "9. Infinitely Singular Valuation", invariants: "d(x)=2, r_x=1, t_x=0", badge: "Free 2D Realm", desc: "Dead-end paths falling off 1D seam edge into Edge Void." },
+      { name: "10. Centerless Total Defect Limit", invariants: "d(x)=2, r_x=0, t_x=0", badge: "Free 2D Realm", desc: "Sequence of 2D boxes shrinking into a Total Void." }
+    ];
+
+    let currentClassIdx = 0;
+
+    function init() {
+      setupProdCanvasInteractions();
+      highlightProduct('II-II');
+      renderBlowup();
+      renderPolydisks();
+      updateShadows();
+      renderClassDiagram();
+      updateReLU();
+      updateNnState();
+    }
+
+    function switchTab(tabName) {
+      ['cartesian', 'shadows', 'classes', 'parameterization', 'relu', 'nn2layer'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`tabBtn-${t}`);
+        btn.classList.remove('bg-cyan-500', 'bg-amber-500', 'bg-sky-500', 'text-slate-950', 'text-white', 'shadow');
+        btn.classList.add('text-slate-400');
+      });
+
+      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tabBtn-${tabName}`);
+      activeBtn.classList.add('bg-cyan-500', 'text-slate-950', 'shadow');
+      activeBtn.classList.remove('text-slate-400');
+
+      if (tabName === 'cartesian') renderProductDiagram(prodState.key);
+      if (tabName === 'shadows') updateShadows();
+      if (tabName === 'classes') renderClassDiagram();
+      if (tabName === 'parameterization') { renderBlowup(); renderPolydisks(); }
+      if (tabName === 'relu') updateReLU();
+      if (tabName === 'nn2layer') updateNnState();
+    }
+
+    function setPrimeForII(pVal) {
+      prodState.primeP = pVal;
+      ['2', '3', '5'].forEach(p => {
+        const btn = document.getElementById(`primeBtn-${p}`);
+        if (parseInt(p) === pVal) {
+          btn.className = "px-2.5 py-1 rounded text-xs font-mono font-bold bg-purple-600 text-white shadow";
+        } else {
+          btn.className = "px-2.5 py-1 rounded text-xs font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700";
+        }
+      });
+      renderProductDiagram(prodState.key);
+    }
+
+    function highlightProduct(prodId) {
+      prodState.key = prodId;
+      ['I-I', 'I-II', 'I-III', 'II-II', 'II-III', 'III-III'].forEach(c => {
+        const el = document.getElementById(`prodCard-${c}`);
+        if (c === prodId) el.classList.add('active-prod'); else el.classList.remove('active-prod');
+      });
+
+      const data = productDB[prodId];
+      if (data) {
+        document.getElementById('prodTitle').innerText = data.title;
+        document.getElementById('prodInvariants').innerText = data.invariants;
+        document.getElementById('prodBadge').innerText = data.badge;
+        document.getElementById('prodDesc').innerText = data.desc;
+        document.getElementById('sliderLabel1').innerText = data.sliderLabel;
+        renderProductDiagram(prodId);
+      }
+    }
+
+    function onProdSliderChange() {
+      const val = parseFloat(document.getElementById('prodSlider1').value);
+      document.getElementById('sliderVal1').innerText = val.toFixed(2);
+      const key = prodState.key;
+      if (key === 'I-I') prodState.c1 = val;
+      if (key === 'I-II') prodState.curveShiftY = val * 30;
+      if (key === 'I-III') prodState.lineAngle = val * 0.5;
+      if (key === 'II-II') prodState.rotAngle = val;
+      if (key === 'II-III') prodState.seamX = val * 40;
+      if (key === 'III-III') prodState.faceU = val * 0.4;
+      renderProductDiagram(key);
+    }
+
+    function setupProdCanvasInteractions() {
+      const cvs = document.getElementById('prodCanvas');
+      if (!cvs) return;
+
+      function getCanvasCoords(evt) {
+        const rect = cvs.getBoundingClientRect();
+        const clientX = evt.clientX || (evt.touches && evt.touches[0].clientX);
+        const clientY = evt.clientY || (evt.touches && evt.touches[0].clientY);
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+
+      function handleMove(coords) {
+        if (!prodState.isDragging) return;
+        const w = cvs.width; const h = cvs.height;
+        const cx = w / 2; const cy = h / 2;
+        const normX = (coords.x - cx) / (w / 4);
+        const normY = (cy - coords.y) / (h / 4);
+
+        const key = prodState.key;
+        if (key === 'I-I') { prodState.c1 = normX; prodState.c2 = normY; }
+        else if (key === 'I-II') prodState.nodeT = Math.max(0.05, Math.min(0.95, coords.x / w));
+        else if (key === 'I-III') prodState.linePosT = Math.max(0.05, Math.min(0.95, coords.x / w));
+        else if (key === 'II-II') prodState.rotAngle = normX;
+        else if (key === 'II-III') prodState.seamX = (coords.x - cx);
+        else if (key === 'III-III') { prodState.faceU = Math.max(-0.8, Math.min(0.8, normX)); prodState.faceV = Math.max(-0.8, Math.min(0.8, normY)); }
+
+        renderProductDiagram(key);
+      }
+
+      cvs.addEventListener('mousedown', (e) => { prodState.isDragging = true; handleMove(getCanvasCoords(e)); });
+      cvs.addEventListener('mousemove', (e) => { handleMove(getCanvasCoords(e)); });
+      window.addEventListener('mouseup', () => { prodState.isDragging = false; });
+    }
+
+    function renderProductDiagram(key) {
+      const cvs = document.getElementById('prodCanvas');
+      if (!cvs) return;
+      const ctx = cvs.getContext('2d');
+      const w = cvs.width; const h = cvs.height;
+      ctx.clearRect(0, 0, w, h);
+      const cx = w / 2; const cy = h / 2;
+      const overlay = document.getElementById('coordOverlay');
+
+      if (key === 'I-I') {
+        const px = cx + prodState.c1 * (w / 4); const py = cy - prodState.c2 * (h / 4);
+        ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+        ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2; ctx.stroke();
+        overlay.innerText = `Coordinates: c1 = ${prodState.c1.toFixed(2)}, c2 = ${prodState.c2.toFixed(2)}`;
+      }
+      else if (key === 'I-II') {
+        const shiftY = prodState.curveShiftY; const nodeX = prodState.nodeT * w;
+        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5; ctx.beginPath();
+        for (let x = 0; x <= w; x += 4) {
+          const relX = (x - cx) / 80; const y = cy + Math.sin(relX) * 45 + shiftY;
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        const nodeY = cy + Math.sin((nodeX - cx) / 80) * 45 + shiftY;
+        ctx.fillStyle = '#60a5fa'; ctx.beginPath(); ctx.arc(nodeX, nodeY, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2; ctx.stroke();
+        overlay.innerText = `Node on Curve: c1 = ${((nodeX - cx) / 60).toFixed(2)}, \u03C12 = 0 (\u2208 Z)`;
+      }
+      else if (key === 'I-III') {
+        const lineAngle = prodState.lineAngle; const lineX = prodState.linePosT * w;
+        const lineY = cy + (lineX - cx) * Math.tan(lineAngle);
+        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5; ctx.beginPath();
+        ctx.moveTo(30, cy + (30 - cx) * Math.tan(lineAngle)); ctx.lineTo(w - 30, cy + (w - 30 - cx) * Math.tan(lineAngle)); ctx.stroke();
+        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(lineX, lineY, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2; ctx.stroke();
+        overlay.innerText = `Continuous Edge Point: \u03C12 = ${(1.414 + (lineX - cx)/200).toFixed(3)} (\u2209 Z)`;
+      }
+      else if (key === 'II-II') {
+        const pVal = prodState.primeP || 3;
+        const pSq = pVal * pVal; const pUp = pVal + 1; const totalF = pSq + pUp;
+        const outerW = 220; const outerH = 170;
+        ctx.strokeStyle = 'rgba(74, 222, 128, 0.7)'; ctx.lineWidth = 2; ctx.setLineDash([4,4]);
+        ctx.strokeRect(cx - outerW/2, cy - outerH/2, outerW, outerH); ctx.setLineDash([]);
+        ctx.fillStyle = '#4ade80'; ctx.font = '10px monospace'; ctx.textAlign = 'left';
+        ctx.fillText(`Upward Parent Box (\u03C11+1, \u03C12+1) [${pUp} Upward Faces]`, cx - outerW/2 + 6, cy - outerH/2 - 6);
+
+        const innerW = 160; const innerH = 120;
+        const boxW = innerW / pVal; const boxH = innerH / pVal;
+        const startX = cx - innerW/2; const startY = cy - innerH/2;
+
+        for (let r = 0; r < pVal; r++) {
+          for (let c = 0; c < pVal; c++) {
+            const bx = startX + c * boxW; const by = startY + r * boxH;
+            ctx.fillStyle = ((r + c) % 2 === 0) ? 'rgba(192, 132, 252, 0.18)' : 'rgba(56, 189, 248, 0.18)';
+            ctx.fillRect(bx, by, boxW, boxH);
+            ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 1; ctx.strokeRect(bx, by, boxW, boxH);
+            if (pVal <= 3) {
+              ctx.fillStyle = '#cbd5e1'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
+              ctx.fillText(`(${c},${r})`, bx + boxW/2, by + boxH/2 + 3);
+            }
+          }
+        }
+        ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 2.5; ctx.stroke();
+        overlay.innerText = `p=${pVal} | Total: ${totalF} Faces (${pSq} Downward p\u00B2, ${pUp} Upward p+1)`;
+      }
+      else if (key === 'II-III') {
+        const sX = prodState.seamX;
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.2)'; ctx.fillRect(cx - 110, cy - 60, 110 + sX, 120);
+        ctx.fillStyle = 'rgba(244, 114, 182, 0.2)'; ctx.fillRect(cx + sX, cy - 60, 110 - sX, 120);
+        ctx.strokeStyle = '#475569'; ctx.lineWidth = 1; ctx.strokeRect(cx - 110, cy - 60, 220, 120);
+        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(cx + sX, cy - 60); ctx.lineTo(cx + sX, cy + 60); ctx.stroke();
+        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(cx + sX, cy, 6, 0, Math.PI * 2); ctx.fill();
+        overlay.innerText = `Seam Edge Position: x_seam = ${(sX/50).toFixed(2)} | (1, 1, 2)`;
+      }
+      else if (key === 'III-III') {
+        const fu = prodState.faceU * (w / 4); const fv = prodState.faceV * (h / 4);
+        ctx.fillStyle = 'rgba(192, 132, 252, 0.25)'; ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(cx - 90, cy - 50); ctx.lineTo(cx + 90, cy - 70); ctx.lineTo(cx + 105, cy + 50); ctx.lineTo(cx - 70, cy + 65); ctx.closePath(); ctx.fill(); ctx.stroke();
+        const px = cx + fu; const py = cy - fv;
+        ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 2; ctx.stroke();
+        overlay.innerText = `Face Interior Point: u = ${(prodState.faceU).toFixed(2)}, v = ${(prodState.faceV).toFixed(2)} | (2, 0, 2)`;
+      }
+    }
+
+    function renderBlowup() {
+      const cvs = document.getElementById('blowupCanvas'); if (!cvs) return;
+      const ctx = cvs.getContext('2d'); ctx.clearRect(0, 0, cvs.width, cvs.height);
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.15)'; ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(30, 60); ctx.lineTo(150, 60); ctx.lineTo(120, 180); ctx.lineTo(0, 180); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(75, 120, 5, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(150, 120); ctx.lineTo(210, 120); ctx.stroke();
+      ctx.fillStyle = 'rgba(192, 132, 252, 0.15)'; ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(240, 60); ctx.lineTo(380, 60); ctx.lineTo(350, 180); ctx.lineTo(210, 180); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(260, 160); ctx.lineTo(340, 80); ctx.stroke();
+      ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(300, 120, 6, 0, Math.PI*2); ctx.fill();
+    }
+
+    function renderPolydisks() {
+      const cvs = document.getElementById('polydiskCanvas'); if (!cvs) return;
+      const ctx = cvs.getContext('2d'); const w = cvs.width; const h = cvs.height; ctx.clearRect(0, 0, w, h);
+      const cx = w / 2; const cy = h / 2; const sizes = [180, 130, 85, 45]; const colors = ['#334155', '#475569', '#64748b', '#ef4444'];
+      sizes.forEach((sz, i) => {
+        ctx.strokeStyle = colors[i]; ctx.lineWidth = 1.5; if (i === 3) ctx.setLineDash([3,3]);
+        ctx.strokeRect(cx - sz/2, cy - sz/2, sz, sz);
+      });
+      ctx.setLineDash([]);
+    }
+
+    function updateShadows() {
+      const r = parseFloat(document.getElementById('sliderR').value);
+      document.getElementById('valR').innerText = r.toFixed(2);
+      document.getElementById('tubeRadiusLabel').innerText = `r = ${r.toFixed(2)}`;
+      document.getElementById('proofTubeVal').innerText = r.toFixed(2);
+      document.getElementById('proofSummary').innerHTML = `Since $r = ${r.toFixed(2)} \\ne 1.00$, $|Y - X|_{\\text{tube}} \\ne |Y - X|_{\\text{prod}}$. Therefore $P_{\\text{tube}} \\ne P_{\\text{prod}}$.`;
+
+      const cvs = document.getElementById('shadowsCanvas'); if (!cvs) return;
+      const ctx = cvs.getContext('2d'); const w = cvs.width; const h = cvs.height; ctx.clearRect(0, 0, w, h);
+      const leftCx = w * 0.28; const cy = h / 2; const size = 90;
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.15)'; ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2;
+      ctx.fillRect(leftCx - size/2, cy - size/2, size, size); ctx.strokeRect(leftCx - size/2, cy - size/2, size, size);
+      const rightCx = w * 0.72;
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 1; ctx.setLineDash([3,3]); ctx.strokeRect(rightCx - size/2, cy - size/2, size, size); ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(245, 158, 11, 0.25)'; ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2; const tubeW = r * size;
+      ctx.beginPath(); ctx.moveTo(rightCx - size/2 - tubeW/2, cy + size/2 - tubeW/2); ctx.lineTo(rightCx - size/2 + tubeW/2, cy + size/2 + tubeW/2);
+      ctx.lineTo(rightCx + size/2 + tubeW/2, cy - size/2 + tubeW/2); ctx.lineTo(rightCx + size/2 - tubeW/2, cy - size/2 - tubeW/2); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+
+    function selectClass(idx) {
+      document.getElementById(`classCard-${currentClassIdx}`).classList.remove('active'); currentClassIdx = idx;
+      document.getElementById(`classCard-${currentClassIdx}`).classList.add('active');
+      const data = classesDB[idx];
+      document.getElementById('classTitle').innerText = data.name; document.getElementById('classSub').innerText = data.invariants;
+      document.getElementById('classBadge').innerText = data.badge; document.getElementById('classDesc').innerText = data.desc;
+      renderClassDiagram();
+    }
+
+    function renderClassDiagram() {
+      const cvs = document.getElementById('classCanvas'); if (!cvs) return;
+      const ctx = cvs.getContext('2d'); const w = cvs.width; const h = cvs.height; ctx.clearRect(0, 0, w, h);
+      const cx = w / 2; const cy = h / 2;
+      if (currentClassIdx === 0) { ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill(); }
+      else if (currentClassIdx === 4) {
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.2)'; ctx.beginPath(); ctx.moveTo(cx-80, cy-60); ctx.lineTo(cx+20, cy-90); ctx.lineTo(cx, cy); ctx.fill();
+        ctx.fillStyle = 'rgba(244, 114, 182, 0.2)'; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx+100, cy-30); ctx.lineTo(cx+60, cy+70); ctx.fill();
+        ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2); ctx.fill();
+      } else { ctx.fillStyle = '#c084fc'; ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fill(); }
+    }
+
+    function updateReLU() {
+      const m = parseFloat(document.getElementById('sliderM').value); const mStar = parseFloat(document.getElementById('sliderMStar').value);
+      const rMin = parseFloat(document.getElementById('sliderRMin').value);
+      document.getElementById('valM').innerText = m.toFixed(2); document.getElementById('valMStar').innerText = mStar.toFixed(2); document.getElementById('valRMin').innerText = rMin.toFixed(2);
+      const loss = Math.max(rMin, 1.0 * Math.abs(m - mStar));
+      document.getElementById('reluLossLabel').innerText = `Loss r_new: ${loss.toFixed(3)}`;
+      const cvs = document.getElementById('reluCanvas'); if (!cvs) return;
+      const ctx = cvs.getContext('2d'); const w = cvs.width; const h = cvs.height; ctx.clearRect(0, 0, w, h);
+      const ox = w/2 + mStar * 40; const oy = h - 60;
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3; ctx.beginPath();
+      for (let px = 40; px <= w - 40; px += 2) {
+        const mVal = (px - ox) / 40; const py = oy - Math.max(rMin, Math.abs(mVal - mStar)) * 100;
+        if (px === 40) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+
+    function stepReLUGD() {
+      let m = parseFloat(document.getElementById('sliderM').value); const mStar = parseFloat(document.getElementById('sliderMStar').value);
+      const diff = m - mStar;
+      if (Math.abs(diff) > 0.05) { m -= Math.sign(diff) * 0.15; document.getElementById('sliderM').value = m; updateReLU(); }
+    }
+    function resetReLU() { document.getElementById('sliderM').value = 1.8; document.getElementById('sliderMStar').value = 0.0; document.getElementById('sliderRMin').value = 0.2; updateReLU(); }
+
+    // --- TAB 6 RESTORED 2-LAYER NN FUNCTIONS ---
+    function updateNnState() {
+      const selectP = document.getElementById('selectPrime'); if (!selectP) return;
+      nnState.p = parseInt(selectP.value);
+      nnState.c1 = parseFloat(document.getElementById('sliderC1').value);
+      nnState.rho1 = parseFloat(document.getElementById('sliderRho1').value);
+      nnState.c2 = parseFloat(document.getElementById('sliderC2').value);
+      nnState.rho2 = parseFloat(document.getElementById('sliderRho2').value);
+      nnState.w1 = parseFloat(document.getElementById('sliderW1').value);
+      nnState.w2 = parseFloat(document.getElementById('sliderW2').value);
+      nnState.lr = parseFloat(document.getElementById('sliderLR').value);
+
+      document.getElementById('valC1').innerText = nnState.c1.toFixed(2);
+      document.getElementById('valRho1').innerText = nnState.rho1.toFixed(2);
+      document.getElementById('valC2').innerText = nnState.c2.toFixed(2);
+      document.getElementById('valRho2').innerText = nnState.rho2.toFixed(2);
+      document.getElementById('valW1').innerText = nnState.w1.toFixed(2);
+      document.getElementById('valW2').innerText = nnState.w2.toFixed(2);
+      document.getElementById('valLR').innerText = nnState.lr.toFixed(2);
+
+      document.getElementById('nnPrimeLabel').innerText = `p = ${nnState.p}`;
+      document.getElementById('nnX1Info').innerText = `c1=${nnState.c1.toFixed(2)}, \u03C11=${nnState.rho1.toFixed(2)}`;
+      document.getElementById('nnX2Info').innerText = `c2=${nnState.c2.toFixed(2)}, \u03C12=${nnState.rho2.toFixed(2)}`;
+      document.getElementById('nnTreeRhoVal').innerText = `\u03C11=${nnState.rho1.toFixed(2)}, \u03C12=${nnState.rho2.toFixed(2)}`;
+
+      renderNn2D(); renderNnTrees(); renderNnArch();
+    }
+
+    function renderNn2D() {
+      const cvs = document.getElementById('canvas2D'); if (!cvs) return;
+      const ctx = cvs.getContext('2d'); const w = cvs.width; const h = cvs.height; ctx.clearRect(0, 0, w, h);
+      const cx = w / 2; const cy = h / 2; const step = w / 6;
+      ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
+      for (let x = 0; x <= w; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+      for (let y = 0; y <= h; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+      const scale = step * 1.2; const px1 = cx + nnState.c1 * scale; const py1 = cy - nnState.c2 * scale;
+      const r1 = Math.pow(nnState.p, nnState.rho1) * (scale * 0.4); const r2 = Math.pow(nnState.p, nnState.rho2) * (scale * 0.4);
+
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.15)'; ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(px1, py1, Math.max(r1, 4), Math.max(r2, 4), 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(192, 132, 252, 0.8)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+      ctx.strokeRect(px1 - r1 * 1.4, py1 - r2 * 1.4, r1 * 2.8, r2 * 2.8); ctx.setLineDash([]);
+
+      ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(px1, py1, 4, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function renderNnTrees() {
+      const cvs = document.getElementById('canvasTrees'); if (!cvs) return;
+      const ctx = cvs.getContext('2d'); const w = cvs.width; const h = cvs.height; ctx.clearRect(0, 0, w, h);
+      drawNnTree(ctx, 80, 20, 140, h - 40, nnState.c1, nnState.rho1, '#38bdf8', 'Dim 1 (x1)');
+      drawNnTree(ctx, 240, 20, 140, h - 40, nnState.c2, nnState.rho2, '#f472b6', 'Dim 2 (x2)');
+    }
+
+    function drawNnTree(ctx, rootX, rootY, width, height, centerVal, rhoVal, color, title) {
+      ctx.fillStyle = '#94a3b8'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(title, rootX, rootY + 10);
+      const startY = rootY + 30; const treeH = height - 50;
+      function drawBranch(x, y, level, wSpan) {
+        if (level >= 3) return;
+        const nextY = y + treeH / 3; const branches = nnState.p; const stepX = wSpan / branches;
+        for (let b = 0; b < branches; b++) {
+          const nextX = x - wSpan/2 + stepX/2 + b * stepX;
+          ctx.strokeStyle = '#334155'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nextX, nextY); ctx.stroke();
+          drawBranch(nextX, nextY, level + 1, stepX);
+        }
+      }
+      drawBranch(rootX, startY, 0, width);
+      const currentY = startY + (1 - (rhoVal + 2)/4) * treeH; const clampedY = Math.max(startY, Math.min(startY + treeH, currentY));
+      const currentX = rootX + centerVal * 15;
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(currentX, clampedY, 6, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(currentX, clampedY, 3, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function renderNnArch() {
+      const cvs = document.getElementById('canvasNN'); if (!cvs) return;
+      const ctx = cvs.getContext('2d'); const w = cvs.width; const h = cvs.height; ctx.clearRect(0, 0, w, h);
+      const l1X = 60; const l2X = 170; const l3X = 280;
+      const nInputs = [{y: 80, label: 'x1', col: '#38bdf8'}, {y: 220, label: 'x2', col: '#f472b6'}];
+      const nHidden = [{y: 70, label: 'h1'}, {y: 150, label: 'h2'}, {y: 230, label: 'h3'}];
+      const nOutputs = [{y: 110, label: 'C0'}, {y: 190, label: 'C1'}];
+
+      nInputs.forEach((inp) => nHidden.forEach((hid) => {
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)'; ctx.beginPath(); ctx.moveTo(l1X, inp.y); ctx.lineTo(l2X, hid.y); ctx.stroke();
+      }));
+      nHidden.forEach((hid) => nOutputs.forEach((out) => {
+        ctx.strokeStyle = 'rgba(192, 132, 252, 0.3)'; ctx.beginPath(); ctx.moveTo(l2X, hid.y); ctx.lineTo(l3X, out.y); ctx.stroke();
+      }));
+
+      nInputs.forEach(i => { ctx.fillStyle = i.col; ctx.beginPath(); ctx.arc(l1X, i.y, 14, 0, Math.PI*2); ctx.fill(); });
+      nHidden.forEach(h => { ctx.fillStyle = '#c084fc'; ctx.beginPath(); ctx.arc(l2X, h.y, 14, 0, Math.PI*2); ctx.fill(); });
+      nOutputs.forEach(o => { ctx.fillStyle = '#4ade80'; ctx.beginPath(); ctx.arc(l3X, o.y, 14, 0, Math.PI*2); ctx.fill(); });
+
+      const rhoH1 = Math.max(nnState.rho1 + Math.log(Math.abs(nnState.w1) + 0.1), nnState.rho2 + Math.log(Math.abs(nnState.w2) + 0.1));
+      const rhoH2 = Math.max(nnState.rho1 - 0.2, nnState.rho2 + 0.1);
+      document.getElementById('nnL1Pushforward').innerText = `\u03C1h1=${rhoH1.toFixed(2)}, \u03C1h2=${rhoH2.toFixed(2)}`;
+
+      const hsia = Math.max(Math.pow(nnState.p, rhoH1), Math.abs(nnState.c1 - nnState.c2));
+      document.getElementById('nnHsiaDist').innerText = `\u03B4(h, y) = ${hsia.toFixed(3)}`;
+
+      const p0 = 1 / (1 + Math.exp(-hsia)); const p1 = 1 - p0;
+      document.getElementById('nnProbDist').innerText = `P0: ${p0.toFixed(2)}, P1: ${p1.toFixed(2)}`;
+      document.getElementById('nnLossBadge').innerText = `Loss: ${(-Math.log(p0 + 1e-5)).toFixed(3)}`;
+    }
+
+    function stepNnGD() {
+      nnState.c1 -= nnState.lr * (nnState.c1 - 0.0) * 0.2;
+      nnState.c2 -= nnState.lr * (nnState.c2 - 0.0) * 0.2;
+      nnState.rho1 -= nnState.lr * (nnState.rho1 - (-0.5)) * 0.15;
+      nnState.rho2 -= nnState.lr * (nnState.rho2 - (-0.5)) * 0.15;
+      document.getElementById('sliderC1').value = nnState.c1;
+      document.getElementById('sliderC2').value = nnState.c2;
+      document.getElementById('sliderRho1').value = nnState.rho1;
+      document.getElementById('sliderRho2').value = nnState.rho2;
+      updateNnState();
+    }
+
+    function toggleNnAutoTrain() {
+      nnState.autoTrain = !nnState.autoTrain;
+      const btn = document.getElementById('nnAutoBtn');
+      if (nnState.autoTrain) {
+        btn.innerText = 'Pause Training'; btn.classList.replace('bg-slate-700', 'bg-emerald-600');
+        nnState.timer = setInterval(stepNnGD, 250);
+      } else {
+        btn.innerText = 'Auto Train'; btn.classList.replace('bg-emerald-600', 'bg-slate-700');
+        clearInterval(nnState.timer);
+      }
+    }
+
+    function applyNnPreset(name) {
+      if (name === 'xor') { nnState.c1 = 0.8; nnState.rho1 = -0.5; nnState.c2 = -0.7; nnState.rho2 = -0.5; nnState.w1 = 1.4; nnState.w2 = -1.2; }
+      else if (name === 'and') { nnState.c1 = 0.2; nnState.rho1 = 0.2; nnState.c2 = 0.3; nnState.rho2 = 0.2; nnState.w1 = 1.0; nnState.w2 = 1.0; }
+      else if (name === 'multi_tree') { nnState.c1 = -1.2; nnState.rho1 = 0.5; nnState.c2 = 1.1; nnState.rho2 = -0.8; nnState.w1 = 2.0; nnState.w2 = 0.6; }
+      document.getElementById('sliderC1').value = nnState.c1; document.getElementById('sliderC2').value = nnState.c2;
+      document.getElementById('sliderRho1').value = nnState.rho1; document.getElementById('sliderRho2').value = nnState.rho2;
+      document.getElementById('sliderW1').value = nnState.w1; document.getElementById('sliderW2').value = nnState.w2;
+      updateNnState();
+    }
+
+    function resetNnParams() {
+      if (nnState.autoTrain) toggleNnAutoTrain();
+      nnState.c1 = 0.1; nnState.rho1 = 0.0; nnState.c2 = 0.2; nnState.rho2 = 0.0; nnState.w1 = 1.0; nnState.w2 = 1.0;
+      document.getElementById('sliderC1').value = nnState.c1; document.getElementById('sliderC2').value = nnState.c2;
+      document.getElementById('sliderRho1').value = nnState.rho1; document.getElementById('sliderRho2').value = nnState.rho2;
+      document.getElementById('sliderW1').value = nnState.w1; document.getElementById('sliderW2').value = nnState.w2;
+      updateNnState();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
